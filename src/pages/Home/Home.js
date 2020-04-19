@@ -6,6 +6,8 @@ import Chart from '../../components/Chart/Chart'
 import CountryPicker from '../../components/CountryPicker/CountryPicker'
 import Loading from '../../components/Loading/Loading'
 
+import imageLogo from '../../assets/image.png'
+
 
 import api from '../../services/api'
 import styles from './Home.module.css'
@@ -16,7 +18,7 @@ export default function Home() {
   const [stats,setStats] = useState({});
   const [reports,setReports] = useState([]);
   const [countries,setCountries] = useState([])
-  // const [selectedCountry,setSelectedCountry] = useState('')
+  const [selectedCountry,setSelectedCountry] = useState('global')
  
   useEffect(()=>{
     
@@ -39,17 +41,34 @@ export default function Home() {
       loadData()
       setTimeout(()=>{
         setLoading(false)
-    },2000)
+    },1000)
   },[])
+
+  const handleCountryChange = async (country) => {
+    setSelectedCountry(country)
+  }
+
+  useEffect(()=>{
+    async function loadData(country) {
+      if (selectedCountry === 'global') {
+        setStats(await api.loadStats())
+      } else {
+        setStats(await api.loadStats(selectedCountry))
+      }
+
+    }
+    loadData()
+  },[selectedCountry])
 
 
  
 
   return (
     loading ?  <Loading/>  : <div className={styles.container} >
+    <img className={styles.imgLogo} src={imageLogo} alt="COVID-19" ></img>
     <Cards data={stats} />
-    <Chart reports={reports} />
-    <CountryPicker countries={countries}/>
+    <CountryPicker countries={countries} handleCountryChange={handleCountryChange} />
+    <Chart reports={reports} country={selectedCountry} stats={stats} />
   </div>
   );
 }
